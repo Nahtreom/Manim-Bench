@@ -2,6 +2,6 @@
 
 English | [中文](README.zh.md)
 
-Generated outputs, rendered videos, audit reports, OCR caches, and metric summaries should go here.
+The evaluation pipeline writes generated code, rendered videos, audit reports, OCR caches, and metric summaries here by default.
 
-This directory is ignored by Git by default. Keep only tiny sanitized examples if needed.
+You can override the output location with `MANIM_BENCH_RESULTS_DIR` or script-level output arguments.

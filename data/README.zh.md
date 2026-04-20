@@ -11,4 +11,4 @@
 - `data/reference_jsonl/`
 - `data/reference_code/`
 
-本仓库不包含完整 benchmark 数据。不要提交私有语料、受版权约束的数据源，或大规模生成数据。
+快速 smoke test 可以直接使用 `examples/` 下的 toy 文件。

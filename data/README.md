@@ -2,7 +2,7 @@
 
 English | [中文](README.zh.md)
 
-Put local datasets, manifests, markdown lecture notes, and reference code here.
+Place local datasets, manifests, markdown lecture notes, and reference code here.
 
 Suggested structure:
 
@@ -11,4 +11,4 @@ Suggested structure:
 - `data/reference_jsonl/`
 - `data/reference_code/`
 
-The full benchmark data is not included in this repository. Do not commit raw private corpora, licensed sources, or large generated datasets.
+For quick smoke tests, use the toy files under `examples/`.

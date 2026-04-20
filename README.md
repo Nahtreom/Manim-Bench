@@ -2,36 +2,18 @@
 
 English | [中文](README.zh.md)
 
-A lightweight toolkit for building and evaluating Manim-code generation benchmarks. It covers dataset curation, LLM generation, rendering, deterministic spatial audit, PADVC/TD scoring, and text-expansion analysis.
+A lightweight toolkit for building and evaluating Manim-code generation benchmarks. It covers dataset preparation, LLM generation, rendering, deterministic spatial audit, PADVC/TD scoring, and text-expansion analysis.
 
-This public repository intentionally does **not** include private datasets, full experiment outputs, paper drafts, or benchmark result tables. It only contains reusable code, format documentation, and tiny toy examples.
+Use the toy files in `examples/` for smoke tests, then place your own prompts, manifests, reference code, and evaluation outputs under `data/` and `results/` or configure custom paths with environment variables.
 
 ## Repository Layout
 
 - `scripts/`: command-line tools for generation, rendering, audit, and metrics
 - `manim_bench/llm_call/`: minimal LLM client wrapper
-- `docs/`: public technical documentation for data formats, metrics, and audit semantics
+- `docs/`: technical documentation for data formats, metrics, and audit semantics
 - `examples/`: small toy inputs and configuration examples
-- `data/`: local-only dataset workspace; gitignored except for `data/README.md`
-- `results/`: local-only output workspace; gitignored except for `results/README.md`
-
-## What Belongs in Git
-
-Keep:
-
-- reusable pipeline code
-- small sanitized examples
-- public documentation
-- config templates
-- environment and dependency instructions
-
-Do not keep:
-
-- private lecture notes or licensed course material
-- full benchmark datasets
-- model generations or rendered videos
-- paper drafts, paper tables, ablation notes, or case-study outputs
-- API keys, OCR caches, Hugging Face caches, and temporary artifacts
+- `data/`: local dataset workspace
+- `results/`: local output workspace
 
 ## System Requirements
 
@@ -117,7 +99,7 @@ Copy the template and fill in your provider settings:
 cp manim_bench/llm_call/config.example.json manim_bench/llm_call/config.json
 ```
 
-`config.json` is gitignored. You can also select a different config path with:
+You can also select a different config path with:
 
 ```bash
 export MANIM_BENCH_LLM_CONFIG=/path/to/config.json

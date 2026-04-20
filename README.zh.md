@@ -2,36 +2,18 @@
 
 [English](README.md) | 中文
 
-这是一个面向 Manim 代码生成基准的轻量工具仓库，覆盖数据清洗、LLM 生成、渲染、确定性空间审计、PADVC/TD 计算以及文本扩展度分析。
+这是一个面向 Manim 代码生成基准的轻量工具仓库，覆盖数据准备、LLM 生成、渲染、确定性空间审计、PADVC/TD 计算以及文本扩展度分析。
 
-这个公开仓库**不**包含私有数据集、完整实验输出、论文草稿或论文表格。仓库中只保留可复用代码、格式说明文档和极小的 toy 示例。
+你可以先使用 `examples/` 中的 toy 文件进行 smoke test，再将自己的 prompts、manifests、参考代码和评测输出放到 `data/` 与 `results/`，或通过环境变量指定自定义路径。
 
 ## 仓库结构
 
 - `scripts/`：生成、渲染、审计和指标计算的命令行工具
 - `manim_bench/llm_call/`：最小化的 LLM 调用封装
-- `docs/`：公开技术文档，包括数据格式、指标和审计语义
+- `docs/`：数据格式、指标和审计语义的技术文档
 - `examples/`：小型示例输入和配置模板
-- `data/`：本地数据工作区；除 `data/README.md` 外默认不进 Git
-- `results/`：本地结果工作区；除 `results/README.md` 外默认不进 Git
-
-## 哪些内容应该进 Git
-
-建议保留：
-
-- 可复用的流水线代码
-- 小型脱敏示例
-- 公开文档
-- 配置模板
-- 环境和依赖安装说明
-
-不要保留：
-
-- 私有讲义或有版权限制的课程材料
-- 完整 benchmark 数据集
-- 模型生成结果或渲染视频
-- 论文草稿、论文表格、ablation 记录或 case study 输出
-- API key、OCR cache、Hugging Face cache 以及临时文件
+- `data/`：本地数据工作区
+- `results/`：本地结果工作区
 
 ## 系统依赖
 
@@ -117,7 +99,7 @@ export PADVC_DEBUG=0
 cp manim_bench/llm_call/config.example.json manim_bench/llm_call/config.json
 ```
 
-`config.json` 默认不会进 Git。你也可以通过环境变量指定其它配置文件：
+你也可以通过环境变量指定其它配置文件：
 
 ```bash
 export MANIM_BENCH_LLM_CONFIG=/path/to/config.json

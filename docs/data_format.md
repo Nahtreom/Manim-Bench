@@ -1,6 +1,6 @@
 # Data Formats
 
-This repository does not ship the full benchmark dataset or experiment outputs. It only defines the file formats expected by the public pipeline.
+This document defines the file formats expected by the public pipeline.
 
 ## 1. Prompt JSONL
 
@@ -68,14 +68,3 @@ This file is typically used to fit reference-center parameters for PADVC and TD.
 - `td_final/`
 - `ocr_cache/`
 - `logs/`
-
-## 6. What Not to Commit
-
-Do not commit:
-
-- raw private lecture notes
-- licensed course material
-- full benchmark JSONL files
-- full model generations
-- rendered benchmark videos
-- OCR caches and temporary artifacts
