@@ -12,13 +12,15 @@ REQUIRED_IMPORTS = [
     ("manim", "manim"),
     ("PIL", "Pillow"),
     ("jieba", "jieba"),
-    ("openai", "openai"),
     ("sentence_transformers", "sentence-transformers"),
     ("sklearn", "scikit-learn"),
 ]
-OPTIONAL_IMPORTS = [
-    ("paddleocr", "paddleocr"),
+REQUIRED_OCR_IMPORTS = [
     ("rapidocr_onnxruntime", "rapidocr-onnxruntime"),
+]
+OPTIONAL_IMPORTS = [
+    ("openai", "openai"),
+    ("paddleocr", "paddleocr"),
 ]
 REQUIRED_COMMANDS = ["manim", "ffmpeg"]
 OPTIONAL_COMMANDS = ["latex", "xelatex", "dvisvgm"]
@@ -60,7 +62,7 @@ def main() -> int:
     parser.add_argument(
         "--strict",
         action="store_true",
-        help="Exit non-zero when optional OCR/LaTeX components are missing.",
+        help="Exit non-zero when optional OCR fallback or LaTeX components are missing.",
     )
     args = parser.parse_args()
 
@@ -73,9 +75,14 @@ def main() -> int:
         ok = has_import(module)
         print(f"  [{'ok' if ok else 'missing'}] {package}")
         failed = failed or not ok
+    for module, package in REQUIRED_OCR_IMPORTS:
+        ok = has_import(module)
+        print(f"  [{'ok' if ok else 'missing'}] {package} (default OCR backend)")
+        failed = failed or not ok
     for module, package in OPTIONAL_IMPORTS:
         ok = has_import(module)
-        print(f"  [{'ok' if ok else 'missing'}] {package} (OCR backend option)")
+        note = "optional generation client" if package == "openai" else "optional OCR fallback"
+        print(f"  [{'ok' if ok else 'missing'}] {package} ({note})")
         optional_failed = optional_failed or not ok
 
     print("\nExternal commands:")

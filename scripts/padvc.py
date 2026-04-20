@@ -1133,7 +1133,7 @@ if __name__ == "__main__":
     parser.add_argument("--delta-mode", choices=["absolute", "positive"], default="positive")
     parser.add_argument("--text-dilate", type=int, default=7)
     parser.add_argument("--ocr-cache-dir")
-    parser.add_argument("--ocr-backend", choices=["paddle", "rapidocr"], default="paddle")
+    parser.add_argument("--ocr-backend", choices=["paddle", "rapidocr"], default="rapidocr")
     parser.add_argument("--rapidocr-package-path")
     parser.add_argument("--rapid-use-cls", action="store_true")
     parser.add_argument("--rapid-no-rec", action="store_true")

@@ -4,7 +4,7 @@ This document defines the file formats expected by the public pipeline.
 
 ## 1. Prompt JSONL
 
-Used by `scripts/generate_code.py` when you already have final prompts.
+Used by the evaluation pipeline to recover prompt-side information such as instruction text, language, and source ids. It is also accepted by `scripts/generate_code.py` when you want to generate model outputs inside this repository.
 
 Each line is a JSON object with at least:
 
@@ -16,7 +16,7 @@ Optional fields such as `language`, `difficulty`, or `source_id` are preserved w
 
 ## 2. Task Manifest JSON
 
-Used by `scripts/prepare_reference_dataset.py` and by evaluation scripts that need to map a sample id to its markdown source or reference code.
+Used by evaluation scripts to map a sample id to its script path, markdown source, or reference code.
 
 Example:
 
@@ -30,7 +30,20 @@ Example:
 ]
 ```
 
-## 3. Reference JSONL
+For evaluation-only use, the most important field is still `id`; the remaining fields can be as light as your workflow allows, as long as downstream scripts can align sample ids consistently.
+
+## 3. Minimal Inputs for Evaluating Existing Outputs
+
+If you already have a model output directory and only want to evaluate it, prepare:
+
+- a directory of Manim scripts such as `your_model_run/cleaned_scripts/*.py`
+- a matching `task_manifest.json`
+- a prompt JSONL with the same sample ids
+- fitted reference parameters for PADVC and TD
+
+This is sufficient for `scripts/run_evaluation_pipeline.sh`.
+
+## 4. Reference JSONL
 
 Produced by `scripts/prepare_reference_dataset.py`.
 
@@ -44,7 +57,7 @@ Each line contains:
 
 This file is typically used to fit reference-center parameters for PADVC and TD.
 
-## 4. Generation Run Layout
+## 5. Generation Run Layout
 
 `scripts/generate_code.py` writes a directory with the following structure:
 
@@ -56,7 +69,7 @@ This file is typically used to fit reference-center parameters for PADVC and TD.
 - `results.json`: run-level summary
 - `task_manifest.json`: manifest for downstream rendering and scoring
 
-## 5. Evaluation Run Layout
+## 6. Evaluation Run Layout
 
 `scripts/run_evaluation_pipeline.sh` writes:
 

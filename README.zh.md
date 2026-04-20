@@ -2,14 +2,14 @@
 
 [English](README.md) | 中文
 
-这是一个面向 Manim 代码生成基准的轻量工具仓库，覆盖数据准备、LLM 生成、渲染、确定性空间审计、PADVC/TD 计算以及文本扩展度分析。
+这是一个用于评测 Manim 代码输出的轻量 benchmark 工具仓库，重点覆盖渲染、确定性空间审计、PADVC/TD 计算和文本扩展度分析。仓库中也提供了一个小型生成封装，但主要工作流是评测而不是生成。
 
 你可以先使用 `examples/` 中的 toy 文件进行 smoke test，再将自己的 prompts、manifests、参考代码和评测输出放到 `data/` 与 `results/`，或通过环境变量指定自定义路径。
 
 ## 仓库结构
 
-- `scripts/`：生成、渲染、审计和指标计算的命令行工具
-- `manim_bench/llm_call/`：最小化的 LLM 调用封装
+- `scripts/`：评测、指标计算以及可选生成的命令行工具
+- `manim_bench/llm_call/`：用于可选生成的最小化 LLM 调用封装
 - `docs/`：数据格式、指标和审计语义的技术文档
 - `examples/`：小型示例输入和配置模板
 - `data/`：本地数据工作区
@@ -65,10 +65,10 @@ python scripts/check_environment.py
 
 PADVC 依赖 OCR 和文本相似度模型。
 
-OCR 后端：
+默认 OCR 后端：
 
-- 默认：`paddleocr`
-- 可选：通过 `PADVC_OCR_BACKEND=rapidocr` 切换到 `rapidocr-onnxruntime`
+- 默认：`rapidocr-onnxruntime`
+- 可选兜底：`paddleocr`
 
 `scripts/padvc.py` 使用的文本相似度模型：
 
@@ -84,16 +84,60 @@ export PADVC_ZH_MODEL=/path/to/text2vec-base-chinese
 export PADVC_EN_MODEL=/path/to/paraphrase-multilingual-MiniLM-L12-v2
 ```
 
-常用缓存变量：
+常用运行时变量：
 
 ```bash
+export PADVC_OCR_BACKEND=rapidocr
 export PADVC_OCR_CACHE_DIR=results/ocr_cache
 export PADVC_DEBUG=0
 ```
 
-## LLM 配置
+## Quickstart：评测已有模型输出
 
-先复制模板，再填写你的 provider 配置：
+主工作流假设你已经有一个模型输出目录，例如：
+
+- `your_model_run/cleaned_scripts/*.py`
+- `your_model_run/task_manifest.json`
+- 一个 prompt JSONL，例如 `data/your_prompts.jsonl`
+- 已拟合好的 PADVC 与 TD 参考参数
+
+如果这些输出不是由 `scripts/generate_code.py` 生成的，请先按照 `docs/data_format.md` 中的格式准备最小 manifest 和 prompt JSONL。
+
+然后直接运行完整评测流水线：
+
+```bash
+scripts/run_evaluation_pipeline.sh \
+  your_model_run/cleaned_scripts \
+  results/eval_your_model \
+  your_model_run/task_manifest.json \
+  data/your_prompts.jsonl \
+  results/reference_padvc/padvc_norm_params.json \
+  results/reference_td/td_center_params.json \
+  your_model_name
+```
+
+如果你想分步骤运行，请查看 `scripts/README.md`。
+
+## 参考参数
+
+`PADVC_center` 和 `TD_center` 都需要参考答案分布参数。请基于你自己的 reference set 进行拟合：
+
+```bash
+python scripts/fit_reference_padvc.py \
+  --dataset-jsonl data/your_reference_dataset.jsonl \
+  --video-root results/reference_videos \
+  --output-dir results/reference_padvc
+
+python scripts/fit_reference_td.py \
+  --dataset-jsonl results/reference_padvc/padvc_reference_raw_scores.jsonl \
+  --output-dir results/reference_td
+```
+
+`examples/params/` 下的参数文件只是 smoke test 占位示例，不代表真实 benchmark 参数。
+
+## 可选：生成模型输出
+
+如果你希望在仓库中直接生成模型输出，可以先复制模板并填写 provider 配置：
 
 ```bash
 cp manim_bench/llm_call/config.example.json manim_bench/llm_call/config.json
@@ -105,9 +149,7 @@ cp manim_bench/llm_call/config.example.json manim_bench/llm_call/config.json
 export MANIM_BENCH_LLM_CONFIG=/path/to/config.json
 ```
 
-## 最小工作流
-
-先从 prompt JSONL 生成代码：
+然后再运行可选的生成脚本：
 
 ```bash
 python scripts/generate_code.py \
@@ -118,38 +160,6 @@ python scripts/generate_code.py \
   --temperature 0.7 \
   --output-dir results/example_generation
 ```
-
-然后执行渲染、空间审计、PADVC、TD 和文本扩展度计算：
-
-```bash
-scripts/run_evaluation_pipeline.sh \
-  results/example_generation/cleaned_scripts \
-  results/example_eval_run \
-  results/example_generation/task_manifest.json \
-  examples/sample_prompts.jsonl \
-  examples/params/padvc_norm_params.example.json \
-  examples/params/td_center_params.example.json \
-  example_model
-```
-
-若想分步骤运行，请查看 `scripts/README.md`。
-
-## 参考参数
-
-`PADVC_center` 和 `TD_center` 都需要参考答案分布参数。请基于你自己的 reference set 进行拟合：
-
-```bash
-python scripts/fit_reference_padvc.py \
-  --input-jsonl your_reference_scores_or_manifest.jsonl \
-  --video-root results/reference_videos \
-  --output-dir results/reference_padvc
-
-python scripts/fit_reference_td.py \
-  --input-jsonl your_reference_video_manifest.jsonl \
-  --output-dir results/reference_td
-```
-
-`examples/params/` 下的参数文件只是 smoke test 占位示例，不代表真实 benchmark 参数。
 
 ## 文档
 

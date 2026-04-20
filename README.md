@@ -2,14 +2,14 @@
 
 English | [中文](README.zh.md)
 
-A lightweight toolkit for building and evaluating Manim-code generation benchmarks. It covers dataset preparation, LLM generation, rendering, deterministic spatial audit, PADVC/TD scoring, and text-expansion analysis.
+A lightweight benchmark toolkit for evaluating Manim code outputs. It focuses on rendering, deterministic spatial audit, PADVC/TD scoring, and text-expansion analysis. A small generation wrapper is included, but evaluation is the primary workflow.
 
 Use the toy files in `examples/` for smoke tests, then place your own prompts, manifests, reference code, and evaluation outputs under `data/` and `results/` or configure custom paths with environment variables.
 
 ## Repository Layout
 
-- `scripts/`: command-line tools for generation, rendering, audit, and metrics
-- `manim_bench/llm_call/`: minimal LLM client wrapper
+- `scripts/`: command-line tools for evaluation, metrics, and optional generation
+- `manim_bench/llm_call/`: minimal LLM client wrapper for optional generation
 - `docs/`: technical documentation for data formats, metrics, and audit semantics
 - `examples/`: small toy inputs and configuration examples
 - `data/`: local dataset workspace
@@ -63,12 +63,12 @@ python scripts/check_environment.py
 
 ## OCR and Small Models
 
-PADVC needs OCR and text-similarity models.
+PADVC depends on OCR and text-similarity models.
 
-OCR backends:
+Default OCR backend:
 
-- default: `paddleocr`
-- optional: `rapidocr-onnxruntime` via `PADVC_OCR_BACKEND=rapidocr`
+- default: `rapidocr-onnxruntime`
+- optional fallback: `paddleocr`
 
 Text-similarity models used by `scripts/padvc.py`:
 
@@ -84,16 +84,60 @@ export PADVC_ZH_MODEL=/path/to/text2vec-base-chinese
 export PADVC_EN_MODEL=/path/to/paraphrase-multilingual-MiniLM-L12-v2
 ```
 
-Useful cache variables:
+Useful runtime variables:
 
 ```bash
+export PADVC_OCR_BACKEND=rapidocr
 export PADVC_OCR_CACHE_DIR=results/ocr_cache
 export PADVC_DEBUG=0
 ```
 
-## LLM Configuration
+## Quickstart: Evaluate Existing Model Outputs
 
-Copy the template and fill in your provider settings:
+The main workflow assumes you already have a directory of generated Manim scripts, for example:
+
+- `your_model_run/cleaned_scripts/*.py`
+- `your_model_run/task_manifest.json`
+- a prompt JSONL such as `data/your_prompts.jsonl`
+- fitted reference parameters for PADVC and TD
+
+If your outputs were not produced by `scripts/generate_code.py`, prepare the minimal manifest and prompt JSONL formats described in `docs/data_format.md`.
+
+Then run the full evaluation pipeline:
+
+```bash
+scripts/run_evaluation_pipeline.sh \
+  your_model_run/cleaned_scripts \
+  results/eval_your_model \
+  your_model_run/task_manifest.json \
+  data/your_prompts.jsonl \
+  results/reference_padvc/padvc_norm_params.json \
+  results/reference_td/td_center_params.json \
+  your_model_name
+```
+
+For stage-by-stage commands, see `scripts/README.md`.
+
+## Reference Parameters
+
+`PADVC_center` and `TD_center` require reference statistics. Fit them on your own curated reference set:
+
+```bash
+python scripts/fit_reference_padvc.py \
+  --dataset-jsonl data/your_reference_dataset.jsonl \
+  --video-root results/reference_videos \
+  --output-dir results/reference_padvc
+
+python scripts/fit_reference_td.py \
+  --dataset-jsonl results/reference_padvc/padvc_reference_raw_scores.jsonl \
+  --output-dir results/reference_td
+```
+
+The example parameter files under `examples/params/` are placeholders for smoke tests only.
+
+## Optional: Generate Model Outputs
+
+If you want to produce model outputs inside this repository, copy the template and fill in your provider settings:
 
 ```bash
 cp manim_bench/llm_call/config.example.json manim_bench/llm_call/config.json
@@ -105,9 +149,7 @@ You can also select a different config path with:
 export MANIM_BENCH_LLM_CONFIG=/path/to/config.json
 ```
 
-## Minimal Workflow
-
-Generate code from prompt JSONL:
+Then run the optional generation wrapper:
 
 ```bash
 python scripts/generate_code.py \
@@ -118,38 +160,6 @@ python scripts/generate_code.py \
   --temperature 0.7 \
   --output-dir results/example_generation
 ```
-
-Run rendering, spatial audit, PADVC, TD, and text expansion:
-
-```bash
-scripts/run_evaluation_pipeline.sh \
-  results/example_generation/cleaned_scripts \
-  results/example_eval_run \
-  results/example_generation/task_manifest.json \
-  examples/sample_prompts.jsonl \
-  examples/params/padvc_norm_params.example.json \
-  examples/params/td_center_params.example.json \
-  example_model
-```
-
-For stage-by-stage commands, see `scripts/README.md`.
-
-## Reference Parameters
-
-`PADVC_center` and `TD_center` require reference statistics. Fit them on your own curated reference set:
-
-```bash
-python scripts/fit_reference_padvc.py \
-  --input-jsonl your_reference_scores_or_manifest.jsonl \
-  --video-root results/reference_videos \
-  --output-dir results/reference_padvc
-
-python scripts/fit_reference_td.py \
-  --input-jsonl your_reference_video_manifest.jsonl \
-  --output-dir results/reference_td
-```
-
-The example parameter files under `examples/params/` are placeholders for smoke tests only.
 
 ## Documentation
 
